@@ -1,6 +1,11 @@
 import { WebPlugin } from '@capacitor/core';
 
-import type { ThinkerNlbSoftPosPlugin } from './definitions';
+import type {
+  ThinkerNlbSoftPosPlugin,
+  PurchaseTransactionOptions,
+  VoidTransactionOptions,
+  TransactionResponse,
+} from './definitions';
 
 export class ThinkerNlbSoftPosWeb extends WebPlugin implements ThinkerNlbSoftPosPlugin {
   async echo(options: { value: string }): Promise<{ value: string }> {
@@ -8,28 +13,25 @@ export class ThinkerNlbSoftPosWeb extends WebPlugin implements ThinkerNlbSoftPos
     return options;
   }
 
-  async initiatePurchaseTransaction(options: {
-    pin: string,
-    amount: string,
-    packageName: string,
-    transactionType: string,
-    transactionClass: string,
-    merchantUniqueID: string,
-  }): Promise<any> {
+  async initiatePurchaseTransaction(options: PurchaseTransactionOptions): Promise<TransactionResponse> {
     console.log('ECHO - INITIATE_PURCHASE', options);
-    return options;
+    return new NullTransactionResponse(false);
   }
 
-  async initiateVoidTransaction(options: {
-    pin: string,
-    amount: string,
-    packageName: string,
-    transactionType: string,
-    transactionClass: string,
-    authorizationCode: string,
-    merchantUniqueID: string,
-  }): Promise<any> {
+  async initiateVoidTransaction(options: VoidTransactionOptions): Promise<TransactionResponse> {
     console.log('ECHO - INITIATE_VOID', options);
-    return options;
+    return new NullTransactionResponse(false);
+  }
+}
+
+export class NullTransactionResponse implements TransactionResponse {
+  isSuccessful: boolean;
+  result: any;
+  error: any;
+
+  constructor(isSuccessful: boolean, result: any = undefined, error: any = undefined) {
+    this.isSuccessful = isSuccessful;
+    this.result = result;
+    this.error = error;
   }
 }
