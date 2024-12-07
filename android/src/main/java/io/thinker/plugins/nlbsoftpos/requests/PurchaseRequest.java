@@ -1,11 +1,16 @@
 package io.thinker.plugins.nlbsoftpos.requests;
 
-import io.thinker.plugins.nlbsoftpos.utils.ValidationResult;
+import io.thinker.plugins.nlbsoftpos.responses.ValidationError;
+import io.thinker.plugins.nlbsoftpos.responses.ValidationErrorFactory;
+import io.thinker.plugins.nlbsoftpos.responses.ValidationResult;
 
+import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PurchaseRequest {
 
@@ -14,77 +19,110 @@ public class PurchaseRequest {
     public String packageName; // required | The package name of the application sending the intent
     public String transactionType; // required | Defines type of the transaction (POS, IPS) | POS, IPS
     public String transactionClass; // required | Defines class of the transaction (purchase, void)
-    // public String authorizationCode; // required for void | Sent in void transaction, receipt data of original request contains this code
     public String merchantUniqueID; // required | Unique identifier of the merchant’s transaction
 
 
     public static PurchaseRequest mapFromPluginCall(PluginCall call) throws Exception {
-      PurchaseRequest request = new PurchaseRequest();
+        PurchaseRequest request = new PurchaseRequest();
 
         request.pin = call.getString("pin");
         request.amount = call.getString("amount");
         request.packageName = call.getString("packageName");
         request.transactionType = call.getString("transactionType");
         request.transactionClass = call.getString("transactionClass");
-      // this.authorizationCode = call.getString("authorizationCode");
         request.merchantUniqueID = call.getString("merchantUniqueID");
 
-      return request;
+        return request;
     }
 
     public ValidationResult validateRequestData() {
-      ValidationResult result = new ValidationResult();
-      result.setIsSuccessful(true);
-      result.setErrorMessages(new ArrayList<String>());
+        ValidationResult result = new ValidationResult();
+        result.setIsSuccessful(true);
+        result.setValidationErrors(new ArrayList<>());
 
-      // validate pin
-      if(pin != null && !pin.trim().isEmpty() && pin.length() != 4) {
-        result.setIsSuccessful(false);
-        result.getErrorMessages().add("PIN code is optional parameter, but if you decide to send it via request then it must be exactly 4 characters long!");
-      }
+        // validate pin
+        if (pin != null && !pin.trim().isEmpty() && pin.length() != 4) {
+            result.setIsSuccessful(false);
+            ValidationError foundValidationError = ValidationErrorFactory.getValidationErrorByCode(3000);
+            if(foundValidationError != null) result.getValidationErrors().add(foundValidationError);
+        }
 
-      // validate amount - required and must have at max 2 decimals
+        // validate amount - required and must have at max 2 decimals
+        if (amount == null || amount.trim().isEmpty()) {
+            result.setIsSuccessful(false);
+            ValidationError foundValidationError = ValidationErrorFactory.getValidationErrorByCode(3001);
+            if(foundValidationError != null) result.getValidationErrors().add(foundValidationError);
+        }
 
-      // validate packageName - required param
-      if(packageName == null || packageName.trim().isEmpty()) {
-        result.setIsSuccessful(false);
-        result.getErrorMessages().add("Mandatory parameter [packageName]! Package name of your application is mandatory field!");
-      }
+        if(amount != null && !amount.trim().isEmpty()) {
+            String regex = "^\\d+(\\.\\d{2})?$";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(amount);
 
-      // validate transactionType
-      if(transactionType == null || transactionType.trim().isEmpty() || (!Objects.equals(transactionType, "POS") && !Objects.equals(transactionType, "IPS"))) {
-        result.setIsSuccessful(false);
-        result.getErrorMessages().add("Mandatory parameter [transactionType]! Transaction type must be either 'POS' or 'IPS'!");
-      }
+            if(!matcher.matches()) {
+                result.setIsSuccessful(false);
+                ValidationError foundValidationError = ValidationErrorFactory.getValidationErrorByCode(3002);
+                if(foundValidationError != null) result.getValidationErrors().add(foundValidationError);
+            }
+        }
 
-      // validate transactionClass
-      if(transactionClass == null || transactionClass.trim().isEmpty() || (!Objects.equals(transactionClass, "purchase") && !Objects.equals(transactionClass, "void"))) {
-        result.setIsSuccessful(false);
-        result.getErrorMessages().add("Mandatory parameter [transactionClass]! Transaction type must be either 'purchase' or 'void'!");
-      }
+        // validate packageName - required param
+        if (packageName == null || packageName.trim().isEmpty()) {
+            result.setIsSuccessful(false);
+            ValidationError foundValidationError = ValidationErrorFactory.getValidationErrorByCode(3003);
+            if(foundValidationError != null) result.getValidationErrors().add(foundValidationError);
+        }
 
-      // transactionClass must be purchase
-      if(!Objects.equals(transactionClass, "purchase")) {
-        result.setIsSuccessful(false);
-        result.getErrorMessages().add("Parameter [transactionClass] must be of type 'purchase'!");
-      }
+        // validate transactionType
+        if (transactionType == null || transactionType.trim().isEmpty() || (!Objects.equals(transactionType, "POS") && !Objects.equals(transactionType, "IPS"))) {
+            result.setIsSuccessful(false);
+            ValidationError foundValidationError = ValidationErrorFactory.getValidationErrorByCode(3004);
+            if(foundValidationError != null) result.getValidationErrors().add(foundValidationError);
+        }
 
-      // validate authorizationCode
-//      if(Objects.equals(transactionClass, "void") && (authorizationCode == null || authorizationCode.trim().isEmpty())) {
-//        result.setIsSuccessful(false);
-//        result.getErrorMessages().add("Mandatory parameter [authorizationCode]! You must send authorization code to make a void transaction!");
-//      }
+        // validate transactionClass
+        if (transactionClass == null || transactionClass.trim().isEmpty() || (!Objects.equals(transactionClass, "purchase") && !Objects.equals(transactionClass, "void"))) {
+            result.setIsSuccessful(false);
+            ValidationError foundValidationError = ValidationErrorFactory.getValidationErrorByCode(3005);
+            if(foundValidationError != null) result.getValidationErrors().add(foundValidationError);
+        }
 
-      // merchantUniqueID
-      if(packageName == null || packageName.trim().isEmpty()) {
-        result.setIsSuccessful(false);
-        result.getErrorMessages().add("Mandatory parameter [merchantUniqueID]! Merchant unique ID is reference generated by your application to correlate transactions!");
-      }
+        // transactionClass must be purchase
+        if (!Objects.equals(transactionClass, "purchase")) {
+            result.setIsSuccessful(false);
+            ValidationError foundValidationError = ValidationErrorFactory.getValidationErrorByCode(3006);
+            if(foundValidationError != null) result.getValidationErrors().add(foundValidationError);
+        }
 
-      return result;
+        // merchantUniqueID
+        if (merchantUniqueID == null || merchantUniqueID.trim().isEmpty()) {
+            result.setIsSuccessful(false);
+            ValidationError foundValidationError = ValidationErrorFactory.getValidationErrorByCode(3009);
+            if(foundValidationError != null) result.getValidationErrors().add(foundValidationError);
+        }
+
+        return result;
     }
 
     public void prefillData() {
-      this.transactionClass = "purchase";
+        this.transactionClass = "purchase";
+    }
+
+    public String getJsonString() {
+        JSObject requestObject = new JSObject();
+        if (this.pin != null) {
+            requestObject.put("pin", this.pin);
+        }
+        requestObject.put("amount", this.amount);
+        requestObject.put("packageName", this.packageName);
+        requestObject.put("transactionType", this.transactionType);
+        requestObject.put("transactionClass", this.transactionClass);
+        requestObject.put("merchantUniqueID", this.merchantUniqueID);
+
+        JSObject wrapperObject = new JSObject();
+        wrapperObject.put("request", requestObject);
+
+        return wrapperObject.toString();
+
     }
 }
