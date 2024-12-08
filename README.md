@@ -284,10 +284,10 @@ initiateVoidTransaction(options: VoidTransactionOptions) => Promise<TransactionR
 
 #### ValidationError
 
-| Prop           | Type                |
-| -------------- | ------------------- |
-| **`message`**  | <code>string</code> |
-| **`errorCod`** | <code>number</code> |
+| Prop            | Type                |
+| --------------- | ------------------- |
+| **`message`**   | <code>string</code> |
+| **`errorCode`** | <code>number</code> |
 
 
 #### PurchaseTransactionOptions
