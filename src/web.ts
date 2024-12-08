@@ -5,6 +5,7 @@ import type {
   PurchaseTransactionOptions,
   VoidTransactionOptions,
   TransactionResponse,
+  ValidationError,
 } from './definitions';
 
 export class ThinkerNlbSoftPosWeb extends WebPlugin implements ThinkerNlbSoftPosPlugin {
@@ -15,23 +16,24 @@ export class ThinkerNlbSoftPosWeb extends WebPlugin implements ThinkerNlbSoftPos
 
   async initiatePurchaseTransaction(options: PurchaseTransactionOptions): Promise<TransactionResponse> {
     console.log('ECHO - INITIATE_PURCHASE', options);
-    return new NullTransactionResponse(false);
+    return new NullTransactionResponse('NULL_TRANSACTION_RESPONSE', -1);
   }
 
   async initiateVoidTransaction(options: VoidTransactionOptions): Promise<TransactionResponse> {
     console.log('ECHO - INITIATE_VOID', options);
-    return new NullTransactionResponse(false);
+    return new NullTransactionResponse('NULL_TRANSACTION_RESPONSE', -1);
   }
 }
 
 export class NullTransactionResponse implements TransactionResponse {
-  isSuccessful: boolean;
-  result: any;
-  error: any;
+  status: string;
+  statusCode: number;
 
-  constructor(isSuccessful: boolean, result: any = undefined, error: any = undefined) {
-    this.isSuccessful = isSuccessful;
-    this.result = result;
-    this.error = error;
+  result: any;
+  validationErrors: ValidationError[] = [];
+
+  constructor(status: string, statusCode: number) {
+    this.status = status;
+    this.statusCode = statusCode;
   }
 }
