@@ -2,6 +2,11 @@ package io.thinker.plugins.nlbsoftpos.responses;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
+import com.google.gson.Gson;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -22,10 +27,10 @@ public class TransactionResponse {
         response.put("status", this.status);
         response.put("statusCode", this.statusCode);
 
-        if(this.result != null) {
+        if (this.result != null) {
             JSObject result = new JSObject();
 
-            if(this.result.getStatus() != null) {
+            if (this.result.getStatus() != null) {
                 JSObject status = new JSObject();
                 status.put("code", this.result.getStatus().getCode());
                 status.put("message", this.result.getStatus().getMessage());
@@ -39,17 +44,17 @@ public class TransactionResponse {
             response.put("result", result);
         }
 
-        if(this.validationErrors != null && !this.validationErrors.isEmpty()) {
-            JSArray validationErrors = new JSArray();
+        if (this.validationErrors != null && !this.validationErrors.isEmpty()) {
+            JSArray validationErrorsJsonArray = new JSArray();
 
-            for(ValidationError validationError : this.validationErrors) {
+            for (ValidationError validationError : this.validationErrors) {
                 JSObject errorObject = new JSObject();
                 errorObject.put("message", validationError.getMessage());
                 errorObject.put("errorCode", validationError.getErrorCode());
-                validationErrors.put(errorObject);
+                validationErrorsJsonArray.put(errorObject);
             }
 
-            response.put("validationErrors", this.validationErrors);
+            response.put("validationErrors", validationErrorsJsonArray);
         }
 
         return response;
@@ -60,9 +65,9 @@ public class TransactionResponse {
         TransactionResultStatus responseStatus = new TransactionResultStatus();
         String paymentIdentificator = "";
 
-        if(response != null) {
+        if (response != null) {
             JSObject status = response.getJSObject("status");
-            if(status != null) {
+            if (status != null) {
                 responseStatus.setCode(status.getString("code"));
                 responseStatus.setMessage(status.getString("message"));
                 responseStatus.setReceiptData(status.getString("receiptData"));
@@ -76,7 +81,7 @@ public class TransactionResponse {
         transactionResult.setPaymentIdentificator(paymentIdentificator);
 
         TransactionResponseStatus status = TransactionResponseStatusFactory.getStatusByKey("NLB_STATUS_CODE_NOT_MAPPED");
-        if(responseStatus.getCode() != null && !responseStatus.getCode().trim().isEmpty()) {
+        if (responseStatus.getCode() != null && !responseStatus.getCode().trim().isEmpty()) {
             status = TransactionResponseStatusFactory.getStatusByNlbCode(responseStatus.getCode());
         }
 

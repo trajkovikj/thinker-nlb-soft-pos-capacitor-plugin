@@ -7,20 +7,18 @@ export interface ThinkerNlbSoftPosPlugin {
 }
 
 export interface PurchaseTransactionOptions {
-  pin: string,
+  pin: string | undefined,
   amount: string,
   packageName: string,
   transactionType: string,
-  transactionClass: string,
   merchantUniqueID: string,
 }
 
 export interface VoidTransactionOptions {
-  pin: string,
+  pin: string | undefined,
   amount: string,
   packageName: string,
   transactionType: string,
-  transactionClass: string,
   authorizationCode: string,
   merchantUniqueID: string,
 }
